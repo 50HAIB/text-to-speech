@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modern Text-to-Speech Converter</title>
+  <style>
+    :root {
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --primary-light: rgba(139, 92, 246, 0.1);
+      --bg-gradient: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --text-main: #2e1065;
+      --text-muted: #6d28d9;
+      --border-color: #ddd6fe;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Dark mode support preference */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-gradient: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+        --card-bg: rgba(30, 27, 75, 0.85);
+        --text-main: #f5f3ff;
+        --text-muted: #c4b5fd;
+        --border-color: #4c1d95;
+        --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 850px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 40px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 25px;
+    }
+
+    @media (min-width: 768px) {
+      .container {
+        padding: 40px;
+      }
+    }
+
+    /* Header / Titles */
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      letter-spacing: -0.025em;
+    }
+
+    header p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    /* Form Controls */
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      transition: var(--transition);
+      outline: none;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 140px;
+    }
+
+    /* Dropdown options styling fix for dark/light mode */
+    select option {
+      background-color: #2e1065;
+      color: #ffffff;
+    }
+
+    @media (prefers-color-scheme: light) {
+      select option {
+        background-color: #ffffff;
+        color: #2e1065;
+      }
+    }
+
+    textarea:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .controls-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .controls-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      gap: 15px;
+    }
+
+    button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #ffffff;
+      background: var(--primary);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    button:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--primary-light);
+    }
+
+    .status-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Text to Speech Converter</h1>
+      <p>Convert your written text into natural-sounding speech instantly.</p>
+    </header>
+
+    <div class="input-group">
+      <label for="text-input">Enter Text</label>
+      <textarea id="text-input" placeholder="Type or paste your text here to convert it into speech..."></textarea>
+    </div>
+
+    <div class="controls-row">
+      <div class="input-group">
+        <label for="voice-select">Select Voice</label>
+        <select id="voice-select">
+          <option value="">Loading voices...</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label for="rate-select">Speed Rate</label>
+        <select id="rate-select">
+          <option value="0.75">0.75x (Slow)</option>
+          <option value="1" selected>1.0x (Normal)</option>
+          <option value="1.25">1.25x (Fast)</option>
+          <option value="1.5">1.5x (Very Fast)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button id="speak-btn">Play Speech</button>
+      <button id="pause-btn" class="btn-secondary" disabled>Pause</button>
+      <button id="stop-btn" class="btn-secondary" disabled>Stop</button>
+    </div>
+    
+    <div id="status-display" class="status-text">Ready to speak</div>
+  </div>
+
+  <script>
+    const synth = window.speechSynthesis;
+    const textInput = document.getElementById('text-input');
+    const voiceSelect = document.getElementById('voice-select');
+    const rateSelect = document.getElementById('rate-select');
+    const speakBtn = document.getElementById('speak-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const statusDisplay = document.getElementById('status-display');
+
+    let voices = [];
+
+    function populateVoices() {
+      voices = synth.getVoices();
+      voiceSelect.innerHTML = '';
+      
+      voices.forEach((voice, i) => {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        if (voice.default) {
+          option.selected = true;
+        }
+        voiceSelect.appendChild(option);
+      });
+
+      if (voices.length === 0) {
+        const option = document.createElement('option');
+        option.textContent = 'No voices available';
+        voiceSelect.appendChild(option);
+      }
+    }
+
+    populateVoices();
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = populateVoices;
+    }
+
+    function speakText() {
+      if (synth.speaking) {
+        synth.cancel();
+      }
+
+      const text = textInput.value.trim();
+      if (!text) {
+        alert('Please enter some text to speak.');
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      const selectedVoiceIndex = voiceSelect.value;
+      if (voices[selectedVoiceIndex]) {
+        utterance.voice = voices[selectedVoiceIndex];
+      }
+      utterance.rate = parseFloat(rateSelect.value);
+
+      utterance.onstart = () => {
+        statusDisplay.textContent = 'Speaking...';
+        speakBtn.disabled = true;
+        pauseBtn.disabled = false;
+        stopBtn.disabled = false;
+        pauseBtn.textContent = 'Pause';
+      };
+
+      utterance.onend = () => {
+        statusDisplay.textContent = 'Finished speaking';
+        resetControls();
+      };
+
+      utterance.onerror = () => {
+        statusDisplay.textContent = 'Error occurred during speech synthesis.';
+        resetControls();
+      };
+
+      synth.speak(utterance);
+    }
+
+    function togglePause() {
+      if (synth.speaking && !synth.paused) {
+        synth.pause();
+        pauseBtn.textContent = 'Resume';
+        statusDisplay.textContent = 'Paused';
+      } else if (synth.paused) {
+        synth.resume();
+        pauseBtn.textContent = 'Pause';
+        statusDisplay.textContent = 'Speaking...';
+      }
+    }
+
+    function stopSpeech() {
+      synth.cancel();
+      statusDisplay.textContent = 'Stopped';
+      resetControls();
+    }
+
+    function resetControls() {
+      speakBtn.disabled = false;
+      pauseBtn.disabled = true;
+      stopBtn.disabled = true;
+      pauseBtn.textContent = 'Pause';
+    }
+
+    speakBtn.addEventListener('click', speakText);
+    pauseBtn.addEventListener('click', togglePause);
+    stopBtn.addEventListener('click', stopSpeech);
+  </script>
+</body>
+</html>
